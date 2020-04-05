@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = "Chat";
+}
+<h2>@ViewBag.Title</h2>
+<h3>@ViewBag.Message</h3>
+
+<br /><br />
+
+
+<div class="form-group">
+    <label>Username:</label>
+    <input type="text" class="form-control" id="username">
+</div>
+<div class="form-group">
+    <label>Message:</label>
+    <input type="text" class="form-control" id="message">
+</div>
+<button class="btn btn-success" id="send">Send message</button>
+<br /><br />
+<div class="form-group">
+    <label>Chat</label>
+    <div id="textarea" ></div>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+
+        function getDate() {
+            var date = new Date();
+            var result = date.toLocaleDateString() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+            return '<i>' + result + '</i>';
+        }
+
+        var proxy = $.connection.chatHub;
+        proxy.client.broadcast = function (username, message) {
+
+            $('#textarea').append(getDate() + ' ' + '<b>' + username + '</b>' + ': ' + message + '<br>');
+        };
+
+        $.connection.hub.start()
+            .done(function () {
+                $('#send').click(function () {
+                    proxy.server.newMessage($('#username').val(), $('#message').val());
+                    $('#message').val('').focus();
+                });
+                console.log('Connected, connection ID=' + $.connection.hub.id);
+            })
+            .fail(function () { alert('Could not connect!'); });
+
+    </script>
+}
